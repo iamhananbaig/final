@@ -2,20 +2,10 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "@/lib/prisma";
 import { nextCookies } from "better-auth/next-js";
-import nodemailer from "nodemailer";
-import { SENDER_EMAIL, SENDER_PASSWORD } from "@/lib/constants/env";
-
-const transporter = nodemailer.createTransport({
-  service: "Gmail", // Change this if using a different email provider
-  host: "smtp.gmail.com",
-  port: 465, // Use 465 for SSL or 587 for TLS
-  secure: true, // true for 465, false for 587
-  auth: {
-    type: "login", // default
-    user: SENDER_EMAIL,
-    pass: SENDER_PASSWORD,
-  },
-});
+import { SENDER_EMAIL } from "@/lib/constants/env";
+import { resend } from "@/lib/resend";
+import logger from "@/lib/logger";
+import argon2 from "argon2";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -24,23 +14,52 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
+    password: {
+      hash: async (password) => {
+        return await argon2.hash(password);
+      },
+      verify: async ({ password, hash }) => {
+        return await argon2.verify(hash, password);
+      },
+    },
   },
   emailVerification: {
+    autoSignInAfterVerification: true,
     sendOnSignUp: true,
-    sendVerificationEmail: async ({ user, url, token }, request) => {
-      try {
-        const urlToUpdate = new URL(url);
-        urlToUpdate.searchParams.set("callbackURL", "/dashboard");
-        await transporter.sendMail({
-          from: SENDER_EMAIL,
-          subject: "Email Verification",
-          to: user.email,
-          html: `Your Email verification Link: ${urlToUpdate.toString()}`,
-        });
-      } catch (error) {
-        console.error("Error sending verification email:", error);
+    sendVerificationEmail: async ({ user, url }) => {
+      const { error } = await resend.emails.send({
+        from: SENDER_EMAIL,
+        to: user.email,
+        subject: "Verify your email address",
+        text: `Click the link to verify your email: ${url}`,
+      });
+
+      if (error) {
+        console.log("Email error: ", error);
       }
     },
   },
+
   plugins: [nextCookies()],
+  logger: {
+    log: (level, message, ...args) => {
+      switch (level) {
+        case "info":
+          logger.info(message, ...args);
+          break;
+        case "warn":
+          logger.warn(message, ...args);
+          break;
+        case "error":
+          logger.error(message, ...args);
+          break;
+        case "debug":
+          logger.debug(message, ...args);
+          break;
+        default:
+          logger.info(message, ...args);
+          break;
+      }
+    },
+  },
 });
