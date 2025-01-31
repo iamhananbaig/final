@@ -2,10 +2,10 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "@/lib/prisma";
 import { nextCookies } from "better-auth/next-js";
-import { SENDER_EMAIL } from "@/lib/constants/env";
-import { resend } from "@/lib/resend";
 import logger from "@/lib/logger";
 import argon2 from "argon2";
+import { MAIL_USER } from "@/lib/constants/env";
+import transporter from "@/lib/mailer";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -27,16 +27,13 @@ export const auth = betterAuth({
     autoSignInAfterVerification: true,
     sendOnSignUp: true,
     sendVerificationEmail: async ({ user, url }) => {
-      const { error } = await resend.emails.send({
-        from: SENDER_EMAIL,
+      await transporter.sendMail({
+        from: `"Authenty" <${MAIL_USER}>`,
         to: user.email,
         subject: "Verify your email address",
         text: `Click the link to verify your email: ${url}`,
+        html: `<p>Click the link to verify your email: <a href="${url}">${url}</a></p>`,
       });
-
-      if (error) {
-        console.log("Email error: ", error);
-      }
     },
   },
 
