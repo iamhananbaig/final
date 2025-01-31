@@ -22,6 +22,14 @@ export const auth = betterAuth({
         return await argon2.verify(hash, password);
       },
     },
+    sendResetPassword: async ({ user, url }) => {
+      await transporter.sendMail({
+        from: `"Authenty" <${MAIL_USER}>`,
+        to: user.email,
+        subject: "Reset your password",
+        text: `Click the link to reset your password: ${url}`,
+      });
+    },
   },
   emailVerification: {
     autoSignInAfterVerification: true,

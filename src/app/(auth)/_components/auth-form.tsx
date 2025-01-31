@@ -23,7 +23,7 @@ import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { TypographyP } from "@/components/ui/typography";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, Dispatch, SetStateAction } from "react";
 import { authClient } from "@/lib/better-auth/auth-client";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -261,7 +261,7 @@ export function SignInFormComp() {
         </CardContent>
       </Card>
       <Dialog open={isForgetClick} onOpenChange={setIsForgetClick}>
-        <ForgetPasswordForm />
+        <ForgetPasswordForm setIsForgetClick={setIsForgetClick} />
       </Dialog>
     </>
   );
@@ -277,7 +277,12 @@ const forgetPasswordSchema = z.object({
 
 type ForgetForm = z.infer<typeof forgetPasswordSchema>;
 
-function ForgetPasswordForm() {
+function ForgetPasswordForm({
+  setIsForgetClick,
+}: {
+  setIsForgetClick: Dispatch<SetStateAction<boolean>>;
+}) {
+  const { toast } = useToast();
   const form = useForm<ForgetForm>({
     resolver: zodResolver(forgetPasswordSchema),
     defaultValues: {
@@ -290,7 +295,27 @@ function ForgetPasswordForm() {
   } = form;
 
   async function onSubmit(values: ForgetForm) {
-    console.log(values);
+    const { email } = values;
+    await authClient.forgetPassword(
+      {
+        email,
+        redirectTo: "/reset-password",
+      },
+      {
+        onSuccess: () => {
+          toast({
+            title: "Success!",
+          });
+          setIsForgetClick(false);
+        },
+        onError: (ctx) => {
+          toast({
+            title: "Error!",
+            description: ctx.error.message,
+          });
+        },
+      }
+    );
   }
 
   return (
@@ -309,7 +334,6 @@ function ForgetPasswordForm() {
                 <FormControl>
                   <Input placeholder="mdfaizan@gmail.com" {...field} />
                 </FormControl>
-
                 <FormMessage />
               </FormItem>
             )}
@@ -327,5 +351,92 @@ function ForgetPasswordForm() {
         </form>
       </Form>
     </DialogContent>
+  );
+}
+
+const resetPassFormSchema = z.object({
+  password: z
+    .string()
+    .min(8, "Password must have at least 8 characters")
+    .max(16, "Password must have at most 16 characters"),
+});
+
+type ResetPassForm = z.infer<typeof resetPassFormSchema>;
+
+export function ResetPassComp({ token }: { token: string }) {
+  const { toast } = useToast();
+  const { push } = useRouter();
+
+  const form = useForm<ResetPassForm>({
+    resolver: zodResolver(resetPassFormSchema),
+    defaultValues: {
+      password: "",
+    },
+  });
+
+  const {
+    formState: { isSubmitting },
+  } = form;
+
+  async function onSubmit(values: ResetPassForm) {
+    const { password } = values;
+    await authClient.resetPassword(
+      {
+        newPassword: password,
+        token,
+      },
+      {
+        onSuccess: async () => {
+          toast({
+            title: "Success!",
+          });
+          push("/sign-in");
+        },
+        onError: async (cxt) => {
+          toast({
+            title: "Error!",
+            description: cxt.error.message,
+          });
+        },
+      }
+    );
+  }
+
+  return (
+    <>
+      <Card className="w-[400px]">
+        <CardHeader>
+          <CardTitle className="card-title">Sign In</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input placeholder="rt4yeb5$VW$^Bun" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="w-full">
+                {!isSubmitting ? (
+                  <Button className="w-full" type="submit">
+                    Reset
+                  </Button>
+                ) : (
+                  <Loader2 className="animate-spin mx-auto" />
+                )}
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    </>
   );
 }
