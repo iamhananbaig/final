@@ -1,4 +1,4 @@
-import UserTable from "@/app/(dashboard)/_components/userTable";
+import UserTable from "./_components/userTable";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function AdminDashboard() {
@@ -11,7 +11,6 @@ export default async function AdminDashboard() {
             Manage users and view system statistics
           </p>
         </div>
-
         <Card>
           <CardHeader>
             <CardTitle>Users</CardTitle>

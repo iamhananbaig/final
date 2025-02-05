@@ -1,17 +1,15 @@
 "use client";
 
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/better-auth/auth-client";
-import LoadingButton from "@/components/loading-button";
-import { useState } from "react";
+import { LogOut } from "lucide-react";
 
-export default function SignoutButton() {
+function SignOutItem() {
   const router = useRouter();
-  const [pending, setPending] = useState(false);
 
   const handleSignOut = async () => {
     try {
-      setPending(true);
       await authClient.signOut({
         fetchOptions: {
           onSuccess: () => {
@@ -23,13 +21,18 @@ export default function SignoutButton() {
     } catch (error) {
       console.error("Error signing out:", error);
     } finally {
-      setPending(false);
     }
   };
 
   return (
-    <LoadingButton pending={pending} onClick={handleSignOut}>
+    <DropdownMenuItem
+      onClick={async () => handleSignOut()}
+      className="cursor-pointer"
+    >
+      <LogOut />
       Sign Out
-    </LoadingButton>
+    </DropdownMenuItem>
   );
 }
+
+export default SignOutItem;

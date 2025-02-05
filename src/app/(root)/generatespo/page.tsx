@@ -21,7 +21,7 @@ export default function DashboardPage() {
   };
 
   const onSubmit = (data: FormData) => {
-    console.log("Selected Vendor:", data.vendor);
+    console.log("Selected Vendor:", data);
   };
 
   return (
