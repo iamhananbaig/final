@@ -14,13 +14,15 @@ datasource db {
 }
 
 model User {
-  id            String       @id @default(cuid())
+  id            String    @id @default(cuid())
   email         String    @unique
   name          String?
   emailVerified Boolean
   image         String?   @db.Text
   createdAt     DateTime
   updatedAt     DateTime
+  roleId        Int?      @unique
+  role          Role?     @relation(fields: [roleId], references: [id], onDelete: Cascade)
   sessions      Session[]
   accounts      Account[]
 
@@ -70,4 +72,27 @@ model Verification {
   updatedAt  DateTime?
 
   @@map("verification")
+}
+
+model Permission {
+  id          Int               @id @default(autoincrement())
+  name        String            @unique
+  description String            @db.Text
+  roles       RolePermissions[]
+}
+
+model Role {
+  id          Int               @id @default(autoincrement())
+  name        String            @unique
+  permissions RolePermissions[]
+  users       User[]
+}
+
+model RolePermissions {
+  roleId       Int
+  permissionId Int
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId]) // Composite Primary Key
 }

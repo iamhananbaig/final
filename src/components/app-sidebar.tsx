@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { BookOpen, Bot, Cross, Settings2, SquareTerminal } from "lucide-react";
+import { Bot, Cross, SquareTerminal } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
@@ -51,67 +51,40 @@ const data = {
       ],
     },
     {
+      title: "Configuration",
+      url: "#",
+      icon: Bot,
+      items: [
+        {
+          title: "Vendor",
+          url: "/vendor",
+        },
+        {
+          title: "Authority",
+          url: "/authority",
+        },
+        {
+          title: "Location",
+          url: "/location",
+        },
+      ],
+    },
+    {
       title: "Service Payment Order",
       url: "#",
       icon: Bot,
       items: [
         {
-          title: "Genesis",
-          url: "#",
+          title: "Generate SPO",
+          url: "/generatespo",
         },
         {
-          title: "Explorer",
-          url: "#",
+          title: "Receive SPO",
+          url: "/receivespo",
         },
         {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
+          title: "Received SPO",
+          url: "receivedspo",
         },
       ],
     },
