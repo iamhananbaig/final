@@ -18,7 +18,6 @@ const data = {
   user: {
     name: "Hanan",
     email: "hananbaig22@gmail.com",
-    avatar: "/avatars/shadcn.jpg",
   },
   header: {
     name: "IDC Pvt Ltd",
@@ -35,6 +34,7 @@ const data = {
         {
           title: "Overview",
           url: "/dashboard",
+          icon: SquareTerminal,
         },
         {
           title: "Users",
@@ -42,6 +42,7 @@ const data = {
         },
         {
           title: "Permissions",
+          isActive: true,
           url: "/dashboard/permissions",
         },
         {
