@@ -1,5 +1,5 @@
 "use client";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
 import {
   Table,
   TableBody,
@@ -8,36 +8,37 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { EditRolePermissionsForm } from "./EditRolePermissionsForm";
 
 export default function RolesTable() {
   const [roles, setRoles] = useState([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchRoles() {
-      try {
-        const response = await fetch("/api/roles");
-        const data = await response.json();
+  const fetchRoles = useCallback(async () => {
+    try {
+      const response = await fetch("/api/roles");
+      const data = await response.json();
 
-        if (response.ok) {
-          setRoles(data);
-        } else {
-          setError(data.error || "Failed to fetch roles");
-        }
-      } catch (error) {
-        if (error instanceof Error) {
-          setError(error.message);
-        } else {
-          setError("An unexpected error occurred");
-        }
-      } finally {
-        setLoading(false);
+      if (response.ok) {
+        setRoles(data);
+      } else {
+        setError(data.error || "Failed to fetch roles");
       }
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("An unexpected error occurred");
+      }
+    } finally {
+      setLoading(false);
     }
-
-    fetchRoles();
   }, []);
+
+  useEffect(() => {
+    fetchRoles();
+  }, [fetchRoles]);
 
   if (loading) {
     return <div>Loading roles...</div>;
@@ -58,17 +59,27 @@ export default function RolesTable() {
           <TableRow>
             <TableHead>Name</TableHead>
             <TableHead>Permissions</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {roles.map(
-            (role: { id: number; name: string; permissions: string[] }) => (
+            (role: {
+              id: number;
+              name: string;
+              permissions: { permission: { name: string } }[];
+            }) => (
               <TableRow key={role.id}>
                 <TableCell>{role.name}</TableCell>
                 <TableCell>
-                  {role.permissions.length > 0
-                    ? role.permissions.join(", ")
-                    : "No permissions"}
+                  {role.permissions.map((p) => p.permission.name).join(", ")}
+                </TableCell>
+                <TableCell>
+                  <EditRolePermissionsForm
+                    roleId={role.id}
+                    roleName={role.name}
+                    onSuccessAction={fetchRoles}
+                  />
                 </TableCell>
               </TableRow>
             )

@@ -7,7 +7,11 @@ export async function GET() {
     // Fetch all roles with their associated permissions
     const roles = await prisma.role.findMany({
       include: {
-        permissions: true, // Assuming 'permissions' is the relation field in your schema
+        permissions: {
+          include: {
+            permission: true, // This will pull the actual Permission details
+          },
+        },
       },
     });
 
