@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-export default function PermissionsPage() {
+export default function PermissionsTable() {
   const [permissions, setPermissions] = useState([]);
   const [error, setError] = useState<string | null>(null);
 
